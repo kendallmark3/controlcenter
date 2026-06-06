@@ -4,6 +4,32 @@ export interface ProjectIntent {
   timelineWeeks: number
   teamSize: number
   knownRisks: string[]
+  jiraProjectKey?: string
+  githubRepo?: string
+  confluenceSpace?: string
+}
+
+export type EvidenceSource = 'jira' | 'github' | 'confluence' | 'capacity' | 'docs'
+
+export interface EvidenceRef {
+  source: EvidenceSource
+  refId: string
+  title: string
+  url?: string
+  signal: string
+}
+
+export interface TracedRisk {
+  description: string
+  severity: 'high' | 'medium' | 'low'
+  evidence: EvidenceRef[]
+}
+
+export interface TracedRecommendation {
+  action: string
+  rationale: string
+  priority: 'critical' | 'high' | 'medium'
+  evidence: EvidenceRef[]
 }
 
 export interface RiskScores {
@@ -12,6 +38,12 @@ export interface RiskScores {
   dependency: number
   technicalComplexity: number
   teamCapacity: number
+  dimensionEvidence: {
+    delivery: EvidenceRef[]
+    dependency: EvidenceRef[]
+    technicalComplexity: EvidenceRef[]
+    teamCapacity: EvidenceRef[]
+  }
 }
 
 export interface Simulation {
@@ -19,15 +51,16 @@ export interface Simulation {
   impact: string
   deltaRisk: number
   severity: 'high' | 'medium' | 'low'
+  evidence: EvidenceRef[]
 }
 
-export interface Evidence {
+export interface EvidenceData {
   jira: {
     velocityTrend: number[]
     openTickets: number
     blockedTickets: number
-    criticalBlockers: { id: string; title: string; priority: string; days_open: number }[]
-    allBlockers: { id: string; title: string; priority: string; days_open: number }[]
+    criticalBlockers: { id: string; title: string; priority: string; assignee?: string; days_open: number }[]
+    allBlockers: { id: string; title: string; priority: string; assignee?: string; days_open: number }[]
   }
   github: {
     testCoverage: number
@@ -36,11 +69,21 @@ export interface Evidence {
     riskSignals: string[]
     openPRDetails: { id: number; title: string; days_open: number; review_status: string }[]
   }
-  wiki: {
-    uncompletedItems: number
-    pendingDecisions: number
+  confluence: {
+    openDecisions: { id: string; title: string; status: string }[]
+    productionReadiness: { checklist: { item: string; done: boolean }[] }
+    unfinishedItems: { item: string; done: boolean }[]
+    knownDependencies: { id: string; name: string; owner: string; note?: string }[]
+  }
+  capacity: {
+    teamSizeNominal: number
+    teamSizeEffective: number
+    qaAllocation: number
+    velocityTrend: number[]
+    offRoster: string[]
   }
   signals: string[]
+  refs: Record<string, EvidenceRef[]>
 }
 
 export interface AnalysisResult {
@@ -55,10 +98,10 @@ export interface AnalysisResult {
     assumptions: string[]
     questions: string[]
   }
-  evidence: Evidence
+  evidence: EvidenceData
   riskScores: RiskScores
   simulations: Simulation[]
-  topRisks: string[]
-  recommendations: string[]
+  topRisks: TracedRisk[]
+  recommendations: TracedRecommendation[]
   executiveSummary: string
 }

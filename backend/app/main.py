@@ -4,10 +4,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
 
 from .models import ProjectIntent
-from .data_loader import load_mock_data
+from .connectors import JiraConnector, GitHubConnector, ConfluenceConnector, CapacityConnector
 from .agents import planner, evidence, risk, simulation, summary
 
-app = FastAPI(title="Enterprise Control Center", version="1.0.0")
+app = FastAPI(title="Enterprise Control Center", version="2.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -23,17 +23,22 @@ _projects: dict = {}
 
 @app.get("/health")
 def health():
-    return {"status": "healthy", "mode": "mock"}
+    return {"status": "healthy", "version": "2.0.0", "mode": "mock"}
 
 
 @app.post("/intent/analyze")
 def analyze_intent(intent: ProjectIntent):
-    mock_data = load_mock_data()
+    connector_data = {
+        "jira": JiraConnector().fetch(intent.jiraProjectKey or "default"),
+        "github": GitHubConnector().fetch(intent.githubRepo or "default"),
+        "confluence": ConfluenceConnector().fetch(intent.confluenceSpace or "default"),
+        "capacity": CapacityConnector().fetch(intent.jiraProjectKey or "default"),
+    }
 
     plan = planner.plan(intent)
-    evidence_data = evidence.gather(intent, mock_data)
+    evidence_data = evidence.gather(intent, connector_data)
     risk_scores = risk.score(intent, plan, evidence_data)
-    simulations = simulation.simulate(intent, risk_scores)
+    simulations = simulation.simulate(intent, risk_scores, evidence_data)
     exec_summary = summary.summarize(intent, plan, evidence_data, risk_scores, simulations)
 
     project_id = str(uuid.uuid4())[:8]

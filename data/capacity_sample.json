@@ -1,0 +1,18 @@
+{
+  "project": "Customer Portal Modernization",
+  "team": {
+    "product_owner": { "name": "Sarah M.", "role": "Product Owner", "allocation": 1.0 },
+    "tech_lead": { "name": "James K.", "role": "Tech Lead", "allocation": 1.0 },
+    "engineers": [
+      { "name": "Dev1", "role": "Engineer", "allocation": 1.0 },
+      { "name": "Dev2", "role": "Engineer", "allocation": 1.0 },
+      { "name": "Dev3", "role": "Engineer", "allocation": 1.0 },
+      { "name": "Dev4", "role": "Engineer", "allocation": 1.0 },
+      { "name": "Dev5", "role": "Engineer", "allocation": 0.0, "note": "on leave" }
+    ],
+    "qa": { "name": "Shared QA", "role": "QA Engineer", "allocation": 0.5, "note": "shared resource — 50% allocation" }
+  },
+  "velocity_history": [42, 38, 31],
+  "sprint_capacity": 40,
+  "sprint_current": 4
+}

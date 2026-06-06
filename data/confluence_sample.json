@@ -1,0 +1,35 @@
+{
+  "space": "CPM",
+  "pages": [
+    {
+      "id": "ADR-001",
+      "title": "Legacy API Strategy",
+      "status": "Pending",
+      "content": "The legacy API v1 remains during transition. A v2 adapter layer will translate between schemas. Risk: v1 is undocumented and behavior is inconsistent."
+    },
+    {
+      "id": "ADR-002",
+      "title": "QA Strategy",
+      "status": "Draft",
+      "content": "Manual QA for release sign-off. Automated smoke tests planned but not yet implemented. No performance baseline established."
+    }
+  ],
+  "open_decisions": [
+    { "id": "ADR-001", "title": "Legacy API Strategy", "status": "Pending" },
+    { "id": "ADR-002", "title": "QA Strategy", "status": "Draft" }
+  ],
+  "production_readiness": {
+    "checklist": [
+      { "item": "Load testing completed", "done": false },
+      { "item": "Runbook written", "done": false },
+      { "item": "Rollback plan defined", "done": false },
+      { "item": "On-call rotation updated", "done": false },
+      { "item": "Production readiness sign-off", "done": false }
+    ]
+  },
+  "known_dependencies": [
+    { "id": "dep-001", "name": "Legacy API v1", "owner": "Platform team", "priority": "low", "note": "Low priority for Platform team — no committed support window" },
+    { "id": "dep-002", "name": "Auth service", "owner": "Auth team", "status": "stable", "note": "No changes planned" },
+    { "id": "dep-003", "name": "Payment gateway", "owner": "External", "status": "out_of_scope", "note": "Out of scope for this release" }
+  ]
+}

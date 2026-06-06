@@ -1,154 +1,129 @@
-import { useState } from 'react'
-import { Evidence } from '../types'
+import { EvidenceData } from '../types'
 
-interface Props { evidence: Evidence }
+interface Props {
+  evidence: EvidenceData
+}
 
-type Tab = 'signals' | 'jira' | 'github' | 'wiki'
+function Pill({ label, ok }: { label: string; ok: boolean }) {
+  return (
+    <span className={`text-xs px-1.5 py-0.5 rounded font-mono ${ok ? 'bg-green-900/50 text-green-400' : 'bg-red-900/50 text-red-400'}`}>
+      {label}
+    </span>
+  )
+}
 
 export default function EvidencePanel({ evidence }: Props) {
-  const [tab, setTab] = useState<Tab>('signals')
-
-  const tabs: { id: Tab; label: string }[] = [
-    { id: 'signals', label: 'Key Signals' },
-    { id: 'jira', label: 'Jira' },
-    { id: 'github', label: 'GitHub' },
-    { id: 'wiki', label: 'Wiki' },
-  ]
+  const { jira, github, confluence, capacity } = evidence
 
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-      <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-4">Evidence</h2>
-      <div className="flex gap-1 mb-5 border-b border-slate-800">
-        {tabs.map(t => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={`px-4 py-2 text-sm transition-colors border-b-2 -mb-px ${
-              tab === t.id
-                ? 'border-blue-500 text-blue-400'
-                : 'border-transparent text-slate-500 hover:text-slate-300'
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
+      <p className="text-xs text-slate-400 uppercase tracking-widest mb-4">Evidence Sources</p>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+        {/* JIRA */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-mono font-semibold text-blue-400">JIRA</span>
+            <span className="text-xs text-slate-500">{jira.openTickets} open · {jira.blockedTickets} blocked</span>
+          </div>
+          {jira.allBlockers.slice(0, 3).map((b) => (
+            <div key={b.id} className="text-xs space-y-0.5">
+              <div className="flex items-center gap-1.5">
+                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${b.priority === 'critical' ? 'bg-red-500' : 'bg-amber-500'}`} />
+                <span className="font-mono text-slate-400">{b.id}</span>
+                <span className={`text-xs ${b.priority === 'critical' ? 'text-red-400' : 'text-amber-400'}`}>
+                  {b.priority}
+                </span>
+              </div>
+              <p className="text-slate-400 pl-3 leading-tight">{b.title}</p>
+              <p className="text-slate-600 pl-3">{b.assignee ?? 'unassigned'} · {b.days_open}d open</p>
+            </div>
+          ))}
+          {jira.velocityTrend.length > 0 && (
+            <p className="text-xs text-slate-500">
+              Velocity: {jira.velocityTrend.join(' → ')} pts
+            </p>
+          )}
+        </div>
+
+        {/* GITHUB */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-mono font-semibold text-purple-400">GITHUB</span>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            <Pill label={`${github.testCoverage}% cov`} ok={github.testCoverage >= 70} />
+            <Pill label={`${github.ciPassRate}% CI`} ok={github.ciPassRate >= 90} />
+            <Pill label={`${github.openPRs} PRs`} ok={github.openPRs < 5} />
+          </div>
+          {github.openPRDetails.slice(0, 2).map((pr) => (
+            <div key={pr.id} className="text-xs space-y-0.5">
+              <div className="flex items-center gap-1.5">
+                <span className="font-mono text-slate-400">PR#{pr.id}</span>
+                <span className={`${pr.days_open > 7 ? 'text-red-400' : 'text-slate-500'}`}>{pr.days_open}d</span>
+              </div>
+              <p className="text-slate-400 leading-tight">{pr.title}</p>
+              <p className="text-slate-600">{pr.review_status}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* CONFLUENCE */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-mono font-semibold text-cyan-400">CONFLUENCE</span>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            <Pill label={`${confluence.unfinishedItems.length} readiness`} ok={confluence.unfinishedItems.length === 0} />
+            <Pill label={`${confluence.openDecisions.length} decisions`} ok={confluence.openDecisions.length === 0} />
+          </div>
+          {confluence.openDecisions.map((adr) => (
+            <div key={adr.id} className="text-xs space-y-0.5">
+              <span className="font-mono text-slate-400">{adr.id}</span>
+              <p className="text-slate-400 leading-tight">{adr.title}</p>
+              <p className="text-amber-500">{adr.status}</p>
+            </div>
+          ))}
+          {confluence.unfinishedItems.slice(0, 2).map((item, i) => (
+            <p key={i} className="text-xs text-slate-500 flex gap-1.5">
+              <span className="text-red-500">☐</span>
+              <span>{item.item}</span>
+            </p>
+          ))}
+        </div>
+
+        {/* CAPACITY */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-mono font-semibold text-amber-400">CAPACITY</span>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            <Pill label={`${capacity.teamSizeEffective}/${capacity.teamSizeNominal} active`} ok={capacity.teamSizeEffective === capacity.teamSizeNominal} />
+            <Pill label={`QA ${Math.round(capacity.qaAllocation * 100)}%`} ok={capacity.qaAllocation >= 0.75} />
+          </div>
+          {capacity.offRoster.length > 0 && (
+            <p className="text-xs text-red-400">{capacity.offRoster.join(', ')} — unavailable</p>
+          )}
+          {capacity.velocityTrend.length > 0 && (
+            <p className="text-xs text-slate-500">
+              Velocity: {capacity.velocityTrend.join(' → ')} pts/sprint
+            </p>
+          )}
+        </div>
+
       </div>
 
-      {tab === 'signals' && (
-        <ul className="space-y-2">
-          {evidence.signals.map((s, i) => (
-            <li key={i} className="flex gap-3 text-sm">
-              <span className="text-amber-400 mt-0.5 shrink-0">⚠</span>
-              <span className="text-slate-300">{s}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {tab === 'jira' && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { label: 'Open Tickets', value: evidence.jira.openTickets },
-              { label: 'Blocked', value: evidence.jira.blockedTickets, warn: true },
-              { label: 'Critical Blockers', value: evidence.jira.criticalBlockers.length, warn: true },
-            ].map(m => (
-              <div key={m.label} className="bg-slate-800 rounded-lg p-3 text-center">
-                <p className={`text-2xl font-bold ${m.warn && m.value > 0 ? 'text-red-400' : 'text-slate-200'}`}>{m.value}</p>
-                <p className="text-xs text-slate-400 mt-1">{m.label}</p>
-              </div>
+      {evidence.signals.length > 0 && (
+        <div className="mt-4 pt-4 border-t border-slate-800">
+          <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">Signals</p>
+          <div className="flex flex-wrap gap-x-6 gap-y-1">
+            {evidence.signals.map((s, i) => (
+              <p key={i} className="text-xs text-slate-400 flex gap-1.5">
+                <span className="text-slate-600">—</span>
+                <span>{s}</span>
+              </p>
             ))}
-          </div>
-          {evidence.jira.velocityTrend.length > 0 && (
-            <div>
-              <p className="text-xs text-slate-400 mb-2">Sprint Velocity</p>
-              <div className="flex gap-2 items-end h-12">
-                {evidence.jira.velocityTrend.map((v, i) => {
-                  const max = Math.max(...evidence.jira.velocityTrend)
-                  const pct = (v / max) * 100
-                  return (
-                    <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                      <span className="text-xs text-slate-400">{v}</span>
-                      <div className="w-full bg-blue-500 rounded-sm" style={{ height: `${pct}%` }} />
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-          {evidence.jira.allBlockers.length > 0 && (
-            <div>
-              <p className="text-xs text-slate-400 mb-2">Active Blockers</p>
-              <div className="space-y-2">
-                {evidence.jira.allBlockers.map(b => (
-                  <div key={b.id} className="flex items-start justify-between text-xs bg-slate-800 rounded px-3 py-2">
-                    <div className="flex gap-2">
-                      <span className={`font-mono ${b.priority === 'critical' ? 'text-red-400' : 'text-amber-400'}`}>{b.id}</span>
-                      <span className="text-slate-300">{b.title}</span>
-                    </div>
-                    <span className="text-slate-500 shrink-0 ml-2">{b.days_open}d</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {tab === 'github' && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { label: 'Test Coverage', value: `${evidence.github.testCoverage}%`, warn: evidence.github.testCoverage < 70 },
-              { label: 'CI Pass Rate', value: `${evidence.github.ciPassRate}%`, warn: evidence.github.ciPassRate < 90 },
-              { label: 'Open PRs', value: evidence.github.openPRs, warn: false },
-            ].map(m => (
-              <div key={m.label} className="bg-slate-800 rounded-lg p-3 text-center">
-                <p className={`text-2xl font-bold ${m.warn ? 'text-amber-400' : 'text-slate-200'}`}>{m.value}</p>
-                <p className="text-xs text-slate-400 mt-1">{m.label}</p>
-              </div>
-            ))}
-          </div>
-          <div>
-            <p className="text-xs text-slate-400 mb-2">Risk Signals</p>
-            <ul className="space-y-1">
-              {evidence.github.riskSignals.map((s, i) => (
-                <li key={i} className="text-xs text-slate-300 flex gap-2">
-                  <span className="text-amber-400">▸</span>{s}
-                </li>
-              ))}
-            </ul>
-          </div>
-          {evidence.github.openPRDetails.length > 0 && (
-            <div>
-              <p className="text-xs text-slate-400 mb-2">Open Pull Requests</p>
-              {evidence.github.openPRDetails.map(pr => (
-                <div key={pr.id} className="flex items-center justify-between text-xs bg-slate-800 rounded px-3 py-2 mb-1">
-                  <span className="text-slate-300">#{pr.id} {pr.title}</span>
-                  <div className="flex gap-2 text-slate-500 shrink-0 ml-2">
-                    <span>{pr.days_open}d</span>
-                    <span className={pr.review_status === 'approved' ? 'text-green-400' : 'text-amber-400'}>{pr.review_status}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {tab === 'wiki' && (
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-slate-800 rounded-lg p-4 text-center">
-            <p className={`text-4xl font-bold ${evidence.wiki.uncompletedItems > 0 ? 'text-red-400' : 'text-green-400'}`}>
-              {evidence.wiki.uncompletedItems}
-            </p>
-            <p className="text-xs text-slate-400 mt-1">Uncompleted Readiness Items</p>
-          </div>
-          <div className="bg-slate-800 rounded-lg p-4 text-center">
-            <p className={`text-4xl font-bold ${evidence.wiki.pendingDecisions > 0 ? 'text-amber-400' : 'text-green-400'}`}>
-              {evidence.wiki.pendingDecisions}
-            </p>
-            <p className="text-xs text-slate-400 mt-1">Pending / TBD Decisions</p>
           </div>
         </div>
       )}
