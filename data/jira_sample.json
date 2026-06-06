@@ -1,0 +1,16 @@
+{
+  "project": "Customer Portal Modernization",
+  "sprints": [
+    { "sprint": 1, "velocity": 42, "planned": 45, "completed": 42, "status": "completed" },
+    { "sprint": 2, "velocity": 38, "planned": 45, "completed": 38, "status": "completed" },
+    { "sprint": 3, "velocity": 31, "planned": 40, "completed": 31, "status": "completed", "notes": "Velocity declining — production incidents" },
+    { "sprint": 4, "velocity": null, "planned": 40, "completed": null, "status": "in_progress" }
+  ],
+  "tickets": { "total": 87, "open": 23, "in_progress": 8, "blocked": 4, "done": 52 },
+  "blockers": [
+    { "id": "CP-142", "title": "Legacy API v2 endpoint not returning expected schema", "priority": "critical", "assignee": "unassigned", "days_open": 12 },
+    { "id": "CP-156", "title": "QA environment missing test data refresh script", "priority": "high", "assignee": "qa_team", "days_open": 7 },
+    { "id": "CP-163", "title": "Production readiness checklist not defined", "priority": "high", "assignee": "unassigned", "days_open": 5 },
+    { "id": "CP-171", "title": "Load test results pending sign-off", "priority": "medium", "assignee": "ops_team", "days_open": 3 }
+  ]
+}

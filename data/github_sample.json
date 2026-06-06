@@ -1,0 +1,26 @@
+{
+  "repository": "customer-portal",
+  "summary": {
+    "open_prs": 6,
+    "merged_prs_last_30d": 18,
+    "open_issues": 14,
+    "contributors_active": 4,
+    "test_coverage": 62,
+    "ci_pass_rate": 84
+  },
+  "recent_commits": [
+    { "sha": "a4f2e1d", "message": "feat: add new dashboard layout", "author": "dev1", "date": "2024-01-15", "files_changed": 12 },
+    { "sha": "b9c3f2a", "message": "fix: resolve legacy API timeout issue (partial)", "author": "dev2", "date": "2024-01-14", "files_changed": 3 },
+    { "sha": "c1e8d9b", "message": "chore: update dependencies", "author": "dev3", "date": "2024-01-13", "files_changed": 1 }
+  ],
+  "open_prs": [
+    { "id": 234, "title": "WIP: Legacy API adapter layer", "author": "dev2", "days_open": 9, "review_status": "changes_requested", "lines_added": 847, "lines_removed": 214 },
+    { "id": 241, "title": "Add QA smoke test suite", "author": "dev4", "days_open": 4, "review_status": "approved", "lines_added": 312, "lines_removed": 0 }
+  ],
+  "risk_signals": [
+    "CI pass rate declining: 84% over 3 weeks",
+    "Large WIP PR open 9 days on critical path",
+    "4 of 5 engineers contributing — one off project",
+    "Test coverage below 70% threshold"
+  ]
+}
