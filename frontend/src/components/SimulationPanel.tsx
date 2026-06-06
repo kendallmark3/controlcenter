@@ -56,7 +56,7 @@ export default function SimulationPanel({ simulations }: Props) {
               <p className="text-xs text-slate-600 mb-1">Why this is plausible:</p>
               <div className="flex flex-wrap gap-1">
                 {sim.evidence.map((e, i) => (
-                  <EvidenceTag key={i} ref={e} />
+                  <EvidenceTag key={i} item={e} />
                 ))}
               </div>
             </div>

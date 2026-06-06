@@ -4,9 +4,11 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 _here = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(_here, "..", "..", "..", "data")
+# Lambda: /var/task/app/connectors → ../../data = /var/task/data (data/ sibling of app/)
+DATA_DIR = os.path.normpath(os.path.join(_here, "..", "..", "data"))
 if not os.path.isdir(DATA_DIR):
-    DATA_DIR = os.path.join(_here, "..", "data")
+    # Local dev: backend/app/connectors → ../../../data = project_root/data
+    DATA_DIR = os.path.normpath(os.path.join(_here, "..", "..", "..", "data"))
 
 
 def _load_json(filename: str) -> dict:

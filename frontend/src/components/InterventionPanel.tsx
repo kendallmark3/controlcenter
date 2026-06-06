@@ -33,7 +33,7 @@ export default function InterventionPanel({ recommendations, topRisks }: Props) 
               {risk.evidence.length > 0 && (
                 <div className="ml-3.5 flex flex-wrap gap-1">
                   {risk.evidence.map((e, j) => (
-                    <EvidenceTag key={j} ref={e} />
+                    <EvidenceTag key={j} item={e} />
                   ))}
                 </div>
               )}
@@ -66,7 +66,7 @@ export default function InterventionPanel({ recommendations, topRisks }: Props) 
                   <div className="ml-4 flex flex-wrap gap-1">
                     <span className="text-xs text-slate-600 mr-1 self-center">Based on:</span>
                     {rec.evidence.map((e, j) => (
-                      <EvidenceTag key={j} ref={e} />
+                      <EvidenceTag key={j} item={e} />
                     ))}
                   </div>
                 )}

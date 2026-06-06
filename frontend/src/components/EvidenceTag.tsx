@@ -16,7 +16,7 @@ const SOURCE_COLORS: Record<string, string> = {
   docs: 'text-slate-400 border-slate-700',
 }
 
-export default function EvidenceTag({ ref: r }: { ref: EvidenceRef }) {
+export default function EvidenceTag({ item: r }: { item: EvidenceRef }) {
   const label = SOURCE_LABELS[r.source] ?? r.source.toUpperCase()
   const color = SOURCE_COLORS[r.source] ?? 'text-slate-400 border-slate-700'
 

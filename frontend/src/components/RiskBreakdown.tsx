@@ -52,7 +52,7 @@ export default function RiskBreakdown({ scores }: Props) {
               {ev.length > 0 && (
                 <div className="flex flex-wrap gap-1 pt-0.5">
                   {ev.slice(0, 2).map((e, i) => (
-                    <EvidenceTag key={i} ref={e} />
+                    <EvidenceTag key={i} item={e} />
                   ))}
                 </div>
               )}
