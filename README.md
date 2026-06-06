@@ -113,51 +113,62 @@ Built on Amazon Bedrock (LLM), DynamoDB (state), ECS Fargate (compute), and API 
 
 ---
 
+## Live Deployment
+
+The POC is deployed to AWS (`us-east-2`) using Lambda + API Gateway + S3:
+
+| | URL |
+|---|---|
+| **Frontend** | http://control-center-frontend-728603839411.s3-website.us-east-2.amazonaws.com |
+| **API** | https://1smuam8qhc.execute-api.us-east-2.amazonaws.com |
+| **Health** | https://1smuam8qhc.execute-api.us-east-2.amazonaws.com/health |
+
+---
+
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                    Frontend (S3 / CloudFront)        │
-│              React Dashboard — executive UI          │
-└────────────────────────┬────────────────────────────┘
-                         │ REST
-┌────────────────────────▼────────────────────────────┐
-│               API Gateway + FastAPI                  │
-│          (ECS Fargate or Lambda container)           │
-│                                                      │
-│   ┌──────────┐  ┌──────────┐  ┌──────────────────┐  │
-│   │ Planner  │  │Evidence  │  │ Risk + Simulation │  │
-│   │  Agent   │  │  Agent   │  │     Agents        │  │
-│   └────┬─────┘  └────┬─────┘  └────────┬─────────┘  │
-│        └─────────────┴─────────────────┘             │
-│                       │                              │
-│              Amazon Bedrock (LLM)                    │
-└────────────────────────┬────────────────────────────┘
-                         │
-┌────────────────────────▼────────────────────────────┐
-│                   DynamoDB                           │
-│          Evidence store / project state              │
-└─────────────────────────────────────────────────────┘
+Browser
+   │
+   ├── S3 Static Website (React dashboard)
+   │       control-center-frontend-728603839411
+   │
+   └── API Gateway HTTP API (us-east-2)
+           https://1smuam8qhc.execute-api.us-east-2.amazonaws.com
+               │
+           Lambda (Python 3.11, arm64, 256MB)
+           control-center-api
+               │
+           FastAPI + Mangum (ASGI adapter)
+           handler: app.main.handler
+               │
+           Five agents → mock data (Jira / GitHub / Wiki)
 ```
+
+**AWS resources:**
+- `Lambda` — `control-center-api` (Python 3.11, arm64 Graviton2, 256 MB, 30s timeout)
+- `API Gateway` — HTTP API v2 with `ANY /` + `ANY /{proxy+}` → Lambda, CORS open
+- `IAM` — `control-center-lambda-role` (AWSLambdaBasicExecutionRole)
+- `S3` — `control-center-frontend-728603839411` (public static website; assets cached 1 year, `index.html` no-cache)
 
 ---
 
 ## Running Locally
 
-The system runs entirely in local mock mode — no AWS account required to evaluate or demo.
+The system runs entirely in local mock mode — no AWS account required.
 
 ```bash
 # Backend
 cd backend
 pip install -r requirements.txt
 uvicorn app.main:app --reload
-# API available at http://localhost:8000
+# API at http://localhost:8000
 
 # Frontend
 cd frontend
 npm install
 npm run dev
-# Dashboard at http://localhost:3000
+# Dashboard at http://localhost:5173
 ```
 
 Mock enterprise data lives in `/data`:
@@ -169,30 +180,33 @@ Mock enterprise data lives in `/data`:
 
 ## AWS Deployment
 
+One script deploys everything end-to-end (requires AWS profile `mkendall`):
+
 ```bash
-# Build and push backend container
-docker build -t control-center-backend ./backend
-# Push to ECR, deploy via ECS Fargate or Lambda container
-
-# Frontend
-cd frontend && npm run build
-# Deploy /out or /dist to S3 + CloudFront
-
-# Infrastructure (if using CDK)
-cd infra
-cdk deploy
+./deploy.sh
 ```
+
+This will:
+1. Package the FastAPI backend as a Lambda zip (arm64 Linux wheels)
+2. Create the IAM role, Lambda function, and API Gateway HTTP API
+3. Build the React frontend with the live API URL injected
+4. Upload the build to S3 with static website hosting enabled
+5. Open the live URL in your browser
+
+**Re-deploy after any code change** — the script is fully idempotent.
 
 ### Environment Variables
 
 | Variable | Description |
 |---|---|
-| `AWS_REGION` | AWS region (e.g. `us-east-1`) |
-| `BEDROCK_MODEL_ID` | Bedrock model to use (e.g. `anthropic.claude-3-sonnet-20240229-v1:0`) |
-| `DYNAMODB_TABLE_NAME` | DynamoDB table for project state |
+| `AWS_REGION` | AWS region (default: `us-east-2`) |
+| `BEDROCK_MODEL_ID` | Bedrock model ID (not used in mock mode) |
+| `DYNAMODB_TABLE_NAME` | DynamoDB table for project state (not used in mock mode) |
+| `MOCK_MODE` | `true` — runs fully on mock data, no Bedrock calls |
 | `LOG_LEVEL` | `INFO` or `DEBUG` |
+| `VITE_API_URL` | API Gateway base URL injected at frontend build time (set automatically by `deploy.sh`) |
 
-Copy `.env.example` to `.env` for local development. No secrets are required in local mock mode.
+Copy `.env.example` to `.env` for local development.
 
 ---
 

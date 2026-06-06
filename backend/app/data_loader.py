@@ -1,7 +1,11 @@
 import json
 import os
 
-DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "data")
+# Lambda packages data/ at the same level as app/; local dev has it two levels up
+_here = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(_here, "..", "data")
+if not os.path.isdir(DATA_DIR):
+    DATA_DIR = os.path.join(_here, "..", "..", "data")
 
 def load_mock_data() -> dict:
     result = {}

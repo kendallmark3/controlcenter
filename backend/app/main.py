@@ -1,6 +1,7 @@
 import uuid
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from mangum import Mangum
 
 from .models import ProjectIntent
 from .data_loader import load_mock_data
@@ -14,6 +15,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+handler = Mangum(app, lifespan="off")
 
 _projects: dict = {}
 

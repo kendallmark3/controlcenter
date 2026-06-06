@@ -8,7 +8,7 @@ import EvidencePanel from './components/EvidencePanel'
 import RecommendationsPanel from './components/RecommendationsPanel'
 import ExecutiveSummary from './components/ExecutiveSummary'
 
-const API = 'http://localhost:8000'
+const API = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 export default function App() {
   const [result, setResult] = useState<AnalysisResult | null>(null)
